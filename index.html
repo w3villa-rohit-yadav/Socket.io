@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Socket.IO Chat</title>
+    <style>
+        body {
+            margin: 0;
+            padding-bottom: 3rem;
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        /* Chat Container */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            max-width: 600px;
+            margin: auto;
+            height: 800px;
+            border: 1px solid #ddd;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            justify-content: center;
+
+        }
+
+        /* Chat Header */
+        .chat-header {
+            background-color: #0056b3;
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        /* Messages */
+        #messages {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            flex-grow: 1;
+            overflow-y: scroll;
+            background-color: #fafafa;
+        }
+
+        #messages>li {
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: flex-start;
+            transition: background-color 0.3s ease;
+        }
+
+        #messages>li:nth-child(odd) {
+            background-color: #f0f8ff;
+        }
+
+        #messages>li:hover {
+            background-color: #e0f0ff;
+        }
+
+        .message-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #007bff;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .message-content {
+            max-width: 70%;
+            word-wrap: break-word;
+            font-size: 1rem;
+            background-color: #f0f8ff;
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Input Form */
+        #form {
+            background-color: #f0f0f0;
+            padding: 1rem;
+            display: flex;
+            position: relative;
+            border-top: 1px solid #ddd;
+        }
+
+        #input {
+            border: 1px solid #ddd;
+            padding: 0.75rem;
+            flex-grow: 1;
+            border-radius: 25px;
+            margin-right: 10px;
+            font-size: 1rem;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        #input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        #form>button {
+            background-color: #007bff;
+            border: none;
+            color: #fff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease;
+        }
+
+        #form>button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Scroll to Bottom for new messages */
+        .scroll-bottom {
+            display: none;
+            position: fixed;
+            right: 20px;
+            bottom: 4rem;
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
+        }
+
+        .scroll-bottom:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            Real-Time Chat
+        </div>
+        <ul id="messages"></ul>
+        <form id="form" action="">
+            <input id="input" autocomplete="off" placeholder="Type a message..." /><button>Send</button>
+        </form>
+        <div class="scroll-bottom" id="scrollBottom">⬇️</div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var socket = io();
+
+        var messages = document.getElementById('messages');
+        var form = document.getElementById('form');
+        var input = document.getElementById('input');
+        var scrollBottom = document.getElementById('scrollBottom');
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            if (input.value) {
+                socket.emit('chat message', input.value);
+                input.value = '';
+                window.scrollTo(0, document.body.scrollHeight);
+            }
+        });
+
+        socket.on('chat message', function (msg) {
+            var item = document.createElement('li');
+
+            // Create avatar
+            var avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = 'R';
+            item.appendChild(avatar);
+
+            // Create message content
+            var content = document.createElement('div');
+            content.className = 'message-content';
+            content.textContent = msg;
+            item.appendChild(content);
+
+            messages.appendChild(item);
+            scrollBottom.style.display = 'none';
+            window.scrollTo(0, document.body.scrollHeight);
+        });
+
+        messages.addEventListener('scroll', function () {
+            if (messages.scrollHeight - messages.scrollTop > messages.clientHeight + 100) {
+                scrollBottom.style.display = 'block';
+            } else {
+                scrollBottom.style.display = 'none';
+            }
+        });
+
+        scrollBottom.addEventListener('click', function () {
+            window.scrollTo(0, document.body.scrollHeight);
+        });
+    </script>
+</body>
+
+</html>
